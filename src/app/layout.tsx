@@ -19,7 +19,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const sesionToken = cookies().get("sessionToken");
+  const sessionToken = cookies().get("sessionToken");
+  console.log("root layout", sessionToken);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={roboto.className}>
@@ -30,7 +31,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <AppProvider initSessionToken={sesionToken?.value}>
+          <AppProvider initialSessionToken={sessionToken?.value}>
             {children}
           </AppProvider>
           <Toaster />

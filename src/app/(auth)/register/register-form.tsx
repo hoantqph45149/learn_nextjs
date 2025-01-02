@@ -17,8 +17,16 @@ import {
 } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import authApiRequest from "@/apiRequests/auth";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { clientSessionToken } from "@/lib/http";
+import { handleErrorApi } from "@/lib/utils";
+import { useState } from "react";
 
 const RegisterForm = () => {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
@@ -31,17 +39,23 @@ const RegisterForm = () => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: RegisterBodyType) {
-    const result = await fetch(
-      `${envConfig.NEXT_PUBLIC_API_URL}/auth/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      }
-    ).then((res) => res.json());
-    console.log(result);
+    setLoading(true);
+    try {
+      const result: any = await authApiRequest.register(values);
+      await authApiRequest.auth({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
+      });
+      toast({
+        description: result.payload.message,
+      });
+      clientSessionToken.value = result.payload.data.token;
+      router.push("/me");
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -107,7 +121,9 @@ const RegisterForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button disabled={loading} type="submit">
+          Submit
+        </Button>
       </form>
     </Form>
   );

@@ -10,16 +10,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
-import { useAppContext } from "@/app/AppProvider";
+import authApiRequest from "@/apiRequests/auth";
+import { useRouter } from "next/navigation";
+import { clientSessionToken } from "@/lib/http";
+import { handleErrorApi } from "@/lib/utils";
+import { useState } from "react";
 
 const LoginForm = () => {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { setSessionToken } = useAppContext();
+  const router = useRouter();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -29,74 +33,22 @@ const LoginForm = () => {
   });
 
   async function onSubmit(values: LoginBodyType) {
+    setLoading(true);
     try {
-      const result = await fetch(
-        `${envConfig.NEXT_PUBLIC_API_URL}/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        }
-      ).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          payload,
-          status: res.status,
-        };
-        if (!res.ok) {
-          throw data;
-        }
-        return data;
+      const result: any = await authApiRequest.login(values);
+      await authApiRequest.auth({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
       });
-
-      const resultFormNextServer = await fetch(`/api/auth`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(result),
-      }).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          payload,
-          status: res.status,
-        };
-        if (!res.ok) {
-          throw data;
-        }
-        return data;
-      });
-      setSessionToken(resultFormNextServer.payload.data.token);
       toast({
-        title: "Success",
         description: result.payload.message,
       });
+      clientSessionToken.value = result.payload.data.token;
+      router.push("/me");
     } catch (error) {
-      const errors = (
-        error as { payload: { errors: { message: string; field: string }[] } }
-      ).payload.errors as {
-        message: string;
-        field: string;
-      }[];
-      const status = (error as { status: number }).status;
-      if (status === 422) {
-        console.log(errors);
-        errors.forEach((error) => {
-          form.setError(error.field as keyof LoginBodyType, {
-            type: "manual",
-            message: error.message,
-          });
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: (error as { payload: { message: string } }).payload
-            .message,
-          variant: "destructive",
-        });
-      }
+      handleErrorApi({ error, setError: form.setError });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -134,7 +86,9 @@ const LoginForm = () => {
           )}
         />
 
-        <Button type="submit">Submit</Button>
+        <Button disabled={loading} type="submit">
+          Submit
+        </Button>
       </form>
     </Form>
   );
