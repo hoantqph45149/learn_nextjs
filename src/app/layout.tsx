@@ -4,8 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import { Toaster } from "@/components/ui/toaster";
-import AppProvider from "@/app/AppProvider";
+import AppProvider from "@/app/app-provider";
 import { cookies } from "next/headers";
+import SlideSession from "@/components/slide-session";
 
 const roboto = Roboto({ subsets: ["vietnamese"], weight: ["400", "900"] });
 
@@ -20,7 +21,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const sessionToken = cookies().get("sessionToken");
-  console.log("root layout", sessionToken);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={roboto.className}>
@@ -32,6 +32,7 @@ export default function RootLayout({
         >
           <Header />
           <AppProvider initialSessionToken={sessionToken?.value}>
+            <SlideSession />
             {children}
           </AppProvider>
           <Toaster />

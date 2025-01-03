@@ -9,7 +9,7 @@ export default function ButtonLogout() {
   const router = useRouter();
   const handleLogout = async () => {
     try {
-      await authApiRequest.logoutFormNextClientToServer();
+      await authApiRequest.logoutFormNextClientToServer(false);
       router.push("/login");
     } catch (error) {
       handleErrorApi({ error });

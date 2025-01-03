@@ -1,6 +1,7 @@
 import envConfig from "@/config";
 import { normalizePath } from "@/lib/utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
+import { redirect } from "next/navigation";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string | undefined;
@@ -51,14 +52,26 @@ export class EntityError extends HttpError {
 
 class SessionToken {
   private token = "";
+  private _expiresAt = new Date().toUTCString();
   get value() {
     return this.token;
+  }
+
+  get expiresAt() {
+    return this._expiresAt;
   }
   set value(token: string) {
     if (typeof window === "undefined") {
       throw new Error("Cannot set session token on server side");
     }
     this.token = token;
+  }
+
+  set expiresAt(expiresAt: string) {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot set session token on server side");
+    }
+    this._expiresAt = expiresAt;
   }
 }
 
@@ -119,10 +132,15 @@ const request = async <Response>(
             ...baseHeaders,
           },
         });
-
         await clientLogoutRequest;
         clientSessionToken.value = "";
+        clientSessionToken.expiresAt = new Date().toUTCString();
         location.href = "/login";
+      } else {
+        const sessionToken = (options?.headers as any)?.Authorization.split(
+          " "
+        )[1];
+        redirect(`/logout?sessionToken=${sessionToken}`);
       }
     } else {
       throw new HttpError(data);
@@ -138,6 +156,7 @@ const request = async <Response>(
       clientSessionToken.value = (payload as LoginResType).data.token;
     } else if ("/auth/logout" === normalizePath(url)) {
       clientSessionToken.value = "";
+      clientSessionToken.expiresAt = new Date().toUTCString();
     }
   }
 

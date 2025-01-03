@@ -1,5 +1,6 @@
 import accountApi from "@/apiRequests/account";
 import Profile from "@/app/me/profile";
+import ProfileForm from "@/app/me/profile-form";
 import { cookies } from "next/headers";
 
 const Me = async () => {
@@ -9,7 +10,7 @@ const Me = async () => {
   return (
     <>
       <h1>Profile</h1>
-      <Profile />
+      <ProfileForm profile={result.payload.data} />
     </>
   );
 };

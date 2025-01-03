@@ -1,11 +1,11 @@
+import http from "@/lib/http";
 import {
   LoginBodyType,
   LoginResType,
   RegisterBodyType,
   RegisterResType,
+  SlideSessionResType,
 } from "@/schemaValidations/auth.schema";
-import http from "@/lib/http";
-import { headers } from "next/headers";
 import { MessageResType } from "@/schemaValidations/common.schema";
 
 const apiAuthRequest = {
@@ -26,13 +26,31 @@ const apiAuthRequest = {
         },
       }
     ),
-  logoutFormNextClientToServer: () =>
+  logoutFormNextClientToServer: (force: boolean | undefined) =>
     http.post<MessageResType>(
       "/api/auth/logout",
-      {},
+      { force },
       {
         baseUrl: "",
       }
+    ),
+
+  slideSessionFromNextServerToServer: (sessionToken: string) =>
+    http.post<SlideSessionResType>(
+      `/auth/slide-session`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      }
+    ),
+
+  slideSessionFromNextClientToNextServer: () =>
+    http.post<SlideSessionResType>(
+      "/api/auth/slide-session",
+      {},
+      { baseUrl: "" }
     ),
 };
 
