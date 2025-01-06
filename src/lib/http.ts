@@ -83,13 +83,24 @@ const request = async <Response>(
   options?: CustomOptions | undefined
 ) => {
   let clientLogoutRequest: null | Promise<any> = null;
-  const body = options?.body ? JSON.stringify(options.body) : undefined;
-  const baseHeaders = {
-    "content-Type": "application/json",
-    Authorization: clientSessionToken.value
-      ? `Bearer ${clientSessionToken.value}`
-      : "",
-  };
+  const body = options?.body
+    ? options.body instanceof FormData
+      ? options.body
+      : JSON.stringify(options.body)
+    : undefined;
+  const baseHeaders =
+    body instanceof FormData
+      ? {
+          Authorization: clientSessionToken.value
+            ? `Bearer ${clientSessionToken.value}`
+            : "",
+        }
+      : {
+          "content-Type": "application/json",
+          Authorization: clientSessionToken.value
+            ? `Bearer ${clientSessionToken.value}`
+            : "",
+        };
 
   const baseUrl =
     options?.baseUrl === undefined
@@ -130,7 +141,7 @@ const request = async <Response>(
           body: JSON.stringify({ force: true }),
           headers: {
             ...baseHeaders,
-          },
+          } as any,
         });
         await clientLogoutRequest;
         clientSessionToken.value = "";

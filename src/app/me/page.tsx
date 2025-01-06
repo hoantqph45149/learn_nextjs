@@ -1,5 +1,4 @@
 import accountApi from "@/apiRequests/account";
-import Profile from "@/app/me/profile";
 import ProfileForm from "@/app/me/profile-form";
 import { cookies } from "next/headers";
 
