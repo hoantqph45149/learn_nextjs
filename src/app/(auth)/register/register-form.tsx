@@ -50,7 +50,8 @@ const RegisterForm = () => {
         description: result.payload.message,
       });
       clientSessionToken.value = result.payload.data.token;
-      router.push("/me");
+      router.push("/");
+      router.refresh();
     } catch (error) {
       handleErrorApi({ error, setError: form.setError });
     } finally {

@@ -9,10 +9,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Metadata } from "next";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "Danh sách sản phẩm",
+  description: "Danh sách sản phẩm của Productic, được tạo Capybara",
+};
+
 const ProductPage = async () => {
+  const sessionToken = cookies().get("sessionToken");
   const { payload } = await productApiRequest.getList();
 
   const productList = payload.data;
@@ -29,7 +37,11 @@ const ProductPage = async () => {
             <TableHead>Image</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead className="text-right">Acctions</TableHead>
+            {sessionToken && (
+              <>
+                <TableHead className="text-right">Acctions</TableHead>
+              </>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -48,15 +60,19 @@ const ProductPage = async () => {
               </TableCell>
               <TableCell>{product.price}</TableCell>
               <TableCell>{product.description}</TableCell>
-              <TableCell className="flex gap-2 justify-end">
-                <Link href={`/product/${product.id}/edit`}>
-                  <Button variant="outline">Edit</Button>
-                </Link>
-                <Link href={`/product/${product.id}/`}>
-                  <Button variant="secondary">Detail</Button>
-                </Link>
-                <DeleteProduct product={product} />
-              </TableCell>
+              {sessionToken && (
+                <>
+                  <TableCell className="flex gap-2 justify-end">
+                    <Link href={`/product/${product.id}/edit`}>
+                      <Button variant="outline">Edit</Button>
+                    </Link>
+                    <Link href={`/product/${product.id}/`}>
+                      <Button variant="secondary">Detail</Button>
+                    </Link>
+                    <DeleteProduct product={product} />
+                  </TableCell>
+                </>
+              )}
             </TableRow>
           ))}
         </TableBody>

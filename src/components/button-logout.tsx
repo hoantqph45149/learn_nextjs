@@ -13,6 +13,10 @@ export default function ButtonLogout() {
       router.push("/login");
     } catch (error) {
       handleErrorApi({ error });
+    } finally {
+      router.refresh();
+      localStorage.removeItem("sessionToken");
+      localStorage.removeItem("sessionTokenExpiresAt");
     }
   };
 

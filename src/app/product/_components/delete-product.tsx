@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ProductResType } from "@/schemaValidations/product.schema";
 import {
   AlertDialog,
@@ -34,7 +33,9 @@ const DeleteProduct = ({ product }: { product: ProductResType["data"] }) => {
   return (
     <>
       <AlertDialog>
-        <AlertDialogTrigger className="bg-red-500">Delete</AlertDialogTrigger>
+        <AlertDialogTrigger className="bg-red-500 px-3 rounded-sm">
+          Delete
+        </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure ?</AlertDialogTitle>

@@ -1,22 +1,36 @@
 "use client";
 
-import { clientSessionToken } from "@/lib/http";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import authApiRequest from "@/apiRequests/auth";
+import apiAuthRequest from "@/apiRequests/auth";
+import useAppContext from "@/hooks/useAppContext";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-export default function page() {
+function LogoutLogic() {
   const router = useRouter();
   const pathname = usePathname();
+  const { setUser } = useAppContext();
+
   const searchParams = useSearchParams();
   const sessionToken = searchParams.get("sessionToken");
-
   useEffect(() => {
-    if (sessionToken === clientSessionToken.value) {
-      authApiRequest.logoutFormNextClientToServer(true).then((res) => {
-        router.push(`/login?redirect=${pathname}`);
+    const controller = new AbortController();
+    if (sessionToken === localStorage.getItem("sessionToken")) {
+      apiAuthRequest.logoutFormNextClientToServer(true).then((res) => {
+        setUser(null);
+        router.push(`/login?redirectFrom=${pathname}`);
       });
     }
-  }, [sessionToken, router, pathname]);
+    return () => {
+      controller.abort();
+    };
+  }, [sessionToken, router, pathname, setUser]);
   return <div>page</div>;
+}
+
+export default function LogoutPage() {
+  return (
+    <Suspense>
+      <LogoutLogic />
+    </Suspense>
+  );
 }

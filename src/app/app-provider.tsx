@@ -1,18 +1,22 @@
 "use client";
-import { clientSessionToken } from "@/lib/http";
+import AppContext from "@/contexts/AppContext";
+import { AccountResType } from "@/schemaValidations/account.schema";
 import { useState } from "react";
+
+export type User = AccountResType["data"];
 
 export default function AppProvider({
   children,
-  initialSessionToken = "",
+  user: initialUser,
 }: {
   children: React.ReactNode;
-  initialSessionToken?: string;
+  user: User | null;
 }) {
-  useState(() => {
-    if (typeof window !== "undefined") {
-      clientSessionToken.value = initialSessionToken;
-    }
-  });
-  return <>{children}</>;
+  const [user, setUser] = useState<User | null>(initialUser);
+
+  return (
+    <AppContext.Provider value={{ user, setUser }}>
+      {children}
+    </AppContext.Provider>
+  );
 }
