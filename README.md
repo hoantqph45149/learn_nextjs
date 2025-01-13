@@ -640,3 +640,88 @@ export default async function Page() {
   );
 }
 ```
+
+## Rendering trong nextjs
+
+### 1: server component
+
+#### 1.1: Static Rendering (trên server)
+
+Khái niệm
+Static Rendering (SSG - Static Site Generation) cho Server Components trong Next.js cho phép bạn tạo ra HTML tĩnh trong quá trình build. Điều này giúp cải thiện hiệu suất và tối ưu SEO vì nội dung được render trước và lưu trữ trên CDN hoặc server.
+
+Cách hoạt động
+Next.js sẽ pre-render các trang ở thời điểm build.
+HTML được tạo ra sẽ được tái sử dụng cho mỗi request, giúp giảm tải công việc trên server trong quá trình runtime.
+Các dữ liệu động không được sử dụng hoặc chỉ sử dụng những dữ liệu có thể được xác định tại thời điểm build.
+
+#### 1.2: Dynamic Rendering (trên server)
+
+**Khái niệm:**
+-Dynamic Rendering trong Next.js là quá trình xử lý và render trang trên server mỗi khi có yêu cầu (request). Điều này đảm bảo rằng dữ liệu luôn được cập nhật theo thời gian thực. Trong App Router (app/), Dynamic Rendering là mặc định khi bạn không sử dụng bất kỳ cơ chế caching nào hoặc bạn chỉ định cache: 'no-store'.
+
+**Cách hoạt động:**
+-Server Components:
+
+    Mặc định trong App Router, các tệp .js/.jsx/.tsx trong app/ là Server Components, nghĩa là chúng được render trên server và gửi HTML tĩnh về client.
+
+-Fetch dữ liệu theo yêu cầu:
+
+    -Khi sử dụng fetch hoặc bất kỳ truy vấn dữ liệu nào, bạn có thể kiểm soát cách cache thông qua:
+
+        cache: 'no-store' (không lưu cache, luôn fetch mới).
+        revalidate: X (lưu cache và làm mới sau X giây).
+
+-Không lưu cache (Dynamic Rendering):
+
+    -Dữ liệu được lấy và render lại từ đầu trên mỗi request.
+
+    -Thích hợp cho dữ liệu cần cập nhật theo thời gian thực (ví dụ: thông tin người dùng, dashboard).
+
+-Routing động (dynamic routes):
+
+    -Các URL động được định nghĩa qua thư mục động [param] trong App Router (app/[param]/page.js).
+
+    -Kết hợp với Dynamic Rendering để xử lý các tham số thay đổi.
+
+### 2: Client component
+
+**Khái niệm:**
+
+-Client Component trong Next.js là các thành phần React được render trên client, nghĩa là chúng được tải lên trình duyệt và chạy bằng JavaScript. Các component này thường dùng cho:
+
+Tương tác động (event handling, state management).
+Giao diện phụ thuộc vào hành động người dùng.
+
+**Cách hoạt động:**
+Tách biệt giữa Server và Client Component:
+
+-Để chuyển thành Client Component, bạn cần thêm dòng khai báo "use client" ở đầu file.
+Quy trình render:
+
+-Server: Next.js gửi HTML tĩnh ban đầu của trang (có thể rỗng).
+-Client: Trình duyệt tải JavaScript để render và quản lý trạng thái, tương tác.
+
+-Tương tác trên client:
+
+-Các Client Component có thể sử dụng React hooks như `useState`, `useEffect`, và quản lý `DOM` trực tiếp.
+-Chúng chỉ hoạt động sau khi hydration (kết hợp `HTML` tĩnh và `JavaScript`) hoàn tất.
+
+## Request Memoization
+
+**Khái niệm:**
+Request Memoization là cơ chế lưu trữ (cache) kết quả của các request hoặc xử lý dữ liệu trong một khoảng thời gian, nhằm giảm số lần truy cập tài nguyên hoặc thực thi logic không cần thiết. Điều này giúp tối ưu hóa hiệu suất và tốc độ khi render các trang hoặc component trong Next.js.
+
+**Cách hoạt động trong App Router:**
+1:Cache Dữ Liệu:
+
+-Next.js sử dụng cơ chế tự động caching request thông qua các tùy chọn như fetch API được tích hợp sẵn.
+-Mặc định, các request thực hiện qua fetch sẽ được lưu trữ và sử dụng lại nếu không có thay đổi.
+
+2:Memoization Custom:
+
+-Memoization được thực hiện thông qua các thư viện như lru-cache, hoặc các cơ chế caching khác (Redis, Memory Cache, ...) để lưu dữ liệu giữa các lần gọi request.
+
+3:Kết hợp Server và Client:
+
+-Memoization thường được áp dụng tại các Server Components để lưu trữ và giảm tải server, sau đó chuyển dữ liệu sang Client Components nếu cần thiết.

@@ -1,9 +1,9 @@
 import { toast } from "@/hooks/use-toast";
 import { EntityError } from "@/lib/http";
 import { clsx, type ClassValue } from "clsx";
+import jwt from "jsonwebtoken";
 import { UseFormSetError } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import jwt from "jsonwebtoken";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

@@ -1,5 +1,6 @@
 "use client";
 
+import authApiRequest from "@/apiRequests/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,15 +11,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { handleErrorApi } from "@/lib/utils";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
-import authApiRequest from "@/apiRequests/auth";
 import { useRouter } from "next/navigation";
-import { clientSessionToken } from "@/lib/http";
-import { handleErrorApi } from "@/lib/utils";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -43,7 +42,6 @@ const LoginForm = () => {
       toast({
         description: result.payload.message,
       });
-      clientSessionToken.value = result.payload.data.token;
       router.push("/");
       router.refresh();
     } catch (error) {

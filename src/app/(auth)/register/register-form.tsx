@@ -20,7 +20,6 @@ import { useForm } from "react-hook-form";
 import authApiRequest from "@/apiRequests/auth";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { clientSessionToken } from "@/lib/http";
 import { handleErrorApi } from "@/lib/utils";
 import { useState } from "react";
 
@@ -49,7 +48,6 @@ const RegisterForm = () => {
       toast({
         description: result.payload.message,
       });
-      clientSessionToken.value = result.payload.data.token;
       router.push("/");
       router.refresh();
     } catch (error) {

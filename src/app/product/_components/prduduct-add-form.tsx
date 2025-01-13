@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { clientSessionToken } from "@/lib/http";
 import { handleErrorApi } from "@/lib/utils";
 import {
   CreateProductBody,
@@ -61,7 +60,6 @@ const ProductAddForm = ({ product }: { product?: ProductResType["data"] }) => {
       toast({
         description: result.payload.message,
       });
-      clientSessionToken.value = result.payload.data.token;
       router.push("/product");
       router.refresh();
     } catch (error) {
@@ -93,7 +91,6 @@ const ProductAddForm = ({ product }: { product?: ProductResType["data"] }) => {
       toast({
         description: result.payload.message,
       });
-      clientSessionToken.value = result.payload.data.token;
       router.push("/product");
       router.refresh();
     } catch (error) {
