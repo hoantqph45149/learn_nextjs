@@ -715,7 +715,7 @@ Request Memoization là cơ chế lưu trữ (cache) kết quả của các requ
 **Cách hoạt động trong App Router:**
 1:Cache Dữ Liệu:
 
--Next.js sử dụng cơ chế tự động caching request thông qua các tùy chọn như fetch API được tích hợp sẵn.
+-Next.js sử dụng cơ chế tự động `caching` request thông qua các tùy chọn như fetch API được tích hợp sẵn.
 -Mặc định, các request thực hiện qua fetch sẽ được lưu trữ và sử dụng lại nếu không có thay đổi.
 
 2:Memoization Custom:
@@ -725,3 +725,97 @@ Request Memoization là cơ chế lưu trữ (cache) kết quả của các requ
 3:Kết hợp Server và Client:
 
 -Memoization thường được áp dụng tại các Server Components để lưu trữ và giảm tải server, sau đó chuyển dữ liệu sang Client Components nếu cần thiết.
+
+## Data cache trong Next.js
+
+-Next.js cung cấp một cơ chế Data Cache tích hợp sẵn, giúp tối ưu hóa việc fetch dữ liệu trên server bằng cách lưu trữ kết quả của các yêu cầu dữ liệu giữa các lần request.
+
+**Cách hoạt động của Data Cache**
+
+-Khi một request fetch được thực hiện lần đầu tiên, Next.js kiểm tra Data Cache xem đã có kết quả cache sẵn hay chưa:
+=> Nếu có cache: Dữ liệu được trả về ngay lập tức từ cache và được memoized (lưu lại trong bộ nhớ tạm).
+=> Nếu không có cache: Request được gửi đến nguồn dữ liệu (data source), kết quả được lưu trong Data Cache và memoized.
+
+-Với dữ liệu không cache (e.g., { cache: 'no-store' }), request luôn được gửi đến nguồn dữ liệu và chỉ memoized, không lưu vào cache lâu dài.
+
+Memoization trong render:
+
+-Tất cả các request, dù được cache hay không, đều được memoized trong mỗi lần render để tránh thực hiện nhiều request giống nhau.
+
+## Full route cache trong Next.js
+
+-Full Route Cache chủ yếu dựa trên việc lưu trữ toàn bộ kết quả render của route và tận dụng khả năng caching của Data Cache. chỉ áp dụng cho static route không áp dụng cho dynamic route.
+
+### Cách Full Route Cache hoạt động\*\*
+
+**1:Khi có request đầu tiên đến route:**
+
+-Next.js kiểm tra xem trang có được cấu hình cache hay không.
+
+-Nếu Data Cache có dữ liệu hợp lệ (theo fetch và revalidate), trang được render nhanh từ dữ liệu cache.
+
+-Nếu không có cache, Next.js thực hiện:
+-Fetch dữ liệu từ nguồn.
+-Render Server Components và Client Components.
+=> Lưu kết quả render vào Full Route Cache.
+
+**2:Khi có request tiếp theo đến cùng route:**
+
+-Next.js sử dụng HTML được lưu trong Full Route Cache, nếu cache còn hợp lệ.
+
+-Điều này giảm thiểu chi phí render server-side.
+**3:Cập nhật cache:**
+
+-Nếu cấu hình revalidate được bật, cache được làm mới tự động sau khoảng thời gian quy định.
+
+-Nếu cache: 'no-store' được đặt trong fetch, không có dữ liệu nào được lưu trong cache.
+
+## Route cache trong Next.js
+
+-Router Cache là một cơ chế lưu trữ dữ liệu phía client-side trong Next.js để cải thiện trải nghiệm người dùng khi điều hướng giữa các trang trong ứng dụng.
+
+### Cách Router Cache Hoạt Động
+
+**1:Lưu trữ Payload:**
+
+-Router Cache lưu trữ React Server Component Payload, được chia nhỏ theo các route segment (các phần của route) trong bộ nhớ tạm thời của trình duyệt.
+
+-Cache tồn tại trong suốt phiên làm việc của người dùng (user session), nhưng sẽ bị xóa khi người dùng refresh trang.
+
+**2:Quản lý điều hướng:**
+
+-Cached segments: Khi người dùng đã truy cập một route, các segment của route đó được lưu lại trong cache.
+
+-Prefetching: Các route mà người dùng có khả năng truy cập (dựa trên các <Link> trong viewport) sẽ được prefetch.
+
+-Partial rendering: Next.js chỉ tải những phần cần thiết cho route mới, thay vì toàn bộ trang.
+
+### Thời Gian Tồn Tại của Router Cache
+
+**1:Phiên làm việc (User Session):**
+
+-Cache tồn tại cho đến khi người dùng refresh trang.
+
+**2:Thời gian tự động hết hạn (Automatic Invalidation Period):**
+
+-Prefetch mặc định (prefetch={null}):
+
+-Route động (dynamic pages): Không được cache.
+
+-Route tĩnh (static pages): Cache 5 phút.
+
+-Full Prefetch (prefetch={true}):
+
+-Route động và tĩnh đều cache 5 phút.
+
+### Cách Invalidate Router Cache
+
+**Dùng Server Action:**
+
+-revalidatePath(path): Làm mới cache của một route cụ thể.
+
+-revalidateTag(tag): Làm mới cache dựa trên tag của dữ liệu.
+
+**Client-side Refresh:**
+
+-router.refresh(): Xóa cache của route hiện tại và gửi request mới đến server để lấy dữ liệu.
